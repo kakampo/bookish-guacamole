@@ -1,1 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>kakampo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #7fffd4;
+      --accent2: #ff6b6b;
+      --accent3: #ffd93d;
+      --text: #c8c8d8;
+      --muted: #55556a;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    /* grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(127,255,212,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(127,255,212,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-logo {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 80px;
+    }
+
+    .hero-tag {
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s forwards;
+    }
+
+    .hero-tag::before { content: '> '; }
+
+    .hero-title {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: #fff;
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.4s forwards;
+    }
+
+    .hero-title span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.6s forwards;
+    }
+
+    /* typing cursor */
+    .typed-line {
+      font-size: 1rem;
+      color: var(--accent);
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.8s forwards;
+    }
+
+    .typed-text::after {
+      content: '█';
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.6s 1s forwards;
+    }
+
+    .btn {
+      padding: 0.75rem 1.75rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: bold;
+    }
+
+    .btn-primary:hover {
+      background: #fff;
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--accent);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(127,255,212,0.08);
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--accent);
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      position: absolute;
+      bottom: 2rem;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: fadeUp 0.6s 1.2s forwards;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-right: 6px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* SECTION */
+    section {
+      padding: 6rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-label::before { content: '// '; color: var(--accent); }
+
+    .section-title {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: #fff;
+      letter-spacing: -0.03em;
+      margin-bottom: 3rem;
+    }
+
+    /* CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .card {
+      background: var(--surface);
+      padding: 1.75rem;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 0;
+      background: var(--accent);
+      transition: height 0.3s;
+    }
+
+    .card:hover::before { height: 100%; }
+    .card:hover { background: #13131c; }
+
+    .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* SKILLS */
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .skill-tag {
+      padding: 0.4rem 0.9rem;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      cursor: default;
+    }
+
+    .skill-tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(127,255,212,0.05);
+    }
+
+    .skill-tag.hot { border-color: var(--accent2); color: var(--accent2); }
+    .skill-tag.learning { border-color: var(--accent3); color: var(--accent3); }
+
+    /* TERMINAL BLOCK */
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-top: 2rem;
+      font-size: 0.82rem;
+    }
+
+    .terminal-header {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.r { background: #ff5f57; }
+    .dot.y { background: #febc2e; }
+    .dot.g { background: #28c840; }
+
+    .terminal-body {
+      padding: 1.2rem 1.4rem;
+      line-height: 2;
+      color: var(--muted);
+    }
+
+    .terminal-body .cmd { color: var(--accent); }
+    .terminal-body .out { color: var(--text); padding-left: 1rem; }
+    .terminal-body .cmt { color: #3a3a55; }
+
+    /* CONTACT */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .contact-item {
+      background: var(--surface);
+      padding: 1.5rem;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .contact-item:hover {
+      background: rgba(127,255,212,0.05);
+      color: var(--accent);
+    }
+
+    .contact-item strong {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s, transform 0.6s;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* corner decoration */
+    .corner {
+      position: absolute;
+      width: 20px; height: 20px;
+      border-color: var(--accent);
+      border-style: solid;
+      opacity: 0.4;
+    }
+    .corner.tl { top: 1rem; left: 1rem; border-width: 1px 0 0 1px; }
+    .corner.tr { top: 1rem; right: 1rem; border-width: 1px 1px 0 0; }
+    .corner.bl { bottom: 1rem; left: 1rem; border-width: 0 0 1px 1px; }
+    .corner.br { bottom: 1rem; right: 1rem; border-width: 0 1px 1px 0; }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem; }
+      .nav-links { gap: 1rem; }
+      .status-bar { flex-wrap: wrap; gap: 1rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">kakampo_</div>
+    <ul class="nav-links">
+      <li><a href="#about">about</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" style="position:relative;">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="container">
+      <p class="hero-tag">system online — algeria, dz</p>
+      <h1 class="hero-title">building<br/><span>cool stuff</span></h1>
+      <p class="hero-sub">
+        student, tinkerer, and future low-level hacker. 
+        interested in emulators, jailbreaks, and how things work under the hood.
+      </p>
+      <p class="typed-line"><span class="typed-text" id="typed"></span></p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn btn-primary">view projects</a>
+        <a href="#contact" class="btn btn-ghost">get in touch</a>
+      </div>
+    </div>
+    <div class="status-bar">
+      <span><span class="status-dot"></span>available</span>
+      <span>// algeria, dz</span>
+      <span>// c/c++ learner</span>
+      <span>// cat owner</span>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <p class="section-label reveal">about</p>
+      <h2 class="section-title reveal">who am i</h2>
+
+      <div class="terminal reveal">
+        <div class="terminal-header">
+          <div class="dot r"></div>
+          <div class="dot y"></div>
+          <div class="dot g"></div>
+          <span style="margin-left:8px;font-size:0.72rem;color:var(--muted)">kakampo@local ~ </span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="cmd">$ whoami</span></div>
+          <div class="out">kakampo — secondary school student, self-taught hacker-in-training</div>
+          <div><span class="cmd">$ cat interests.txt</span></div>
+          <div class="out">gaming, manga, hardware tinkering, emulator dev, console hacking</div>
+          <div><span class="cmd">$ cat goals.txt</span></div>
+          <div class="out">contribute to Switch 2 jailbreak/emulator scene someday</div>
+          <div><span class="cmd">$ ls pets/</span></div>
+          <div class="out">cats/  <span class="cmt"># multiple</span></div>
+          <div><span class="cmd">$ _</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:3rem;">
+        <p class="section-label reveal">stack & skills</p>
+        <div class="skills-grid" style="margin-top:1rem;">
+          <span class="skill-tag hot">C / C++</span>
+          <span class="skill-tag hot">ARM64 ASM</span>
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Git</span>
+          <span class="skill-tag">Linux</span>
+          <span class="skill-tag">Windows</span>
+          <span class="skill-tag learning">Ghidra (learning)</span>
+          <span class="skill-tag learning">Emulator Dev (learning)</span>
+          <span class="skill-tag">HTML / CSS</span>
+          <span class="skill-tag">Reverse Engineering</span>
+        </div>
+        <div style="margin-top:1rem;font-size:0.72rem;color:var(--muted);display:flex;gap:1.5rem;">
+          <span><span style="color:var(--accent2)">■</span> active</span>
+          <span><span style="color:var(--accent3)">■</span> learning</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="container">
+      <p class="section-label reveal">projects</p>
+      <h2 class="section-title reveal">things i've built</h2>
+      <div class="cards reveal">
+        <div class="card">
+          <div class="card-icon">🕹️</div>
+          <div class="card-title">CHIP-8 Emulator</div>
+          <div class="card-desc">A basic emulator built in C as a stepping stone toward Game Boy and beyond.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔧</div>
+          <div class="card-title">Windows Setup Scripts</div>
+          <div class="card-desc">Clean install automation for AMD & Intel rigs. DDU, drivers, partitions — all sorted.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <div class="card-title">This Website</div>
+          <div class="card-desc">Static site hosted on GitHub Pages. Pure HTML/CSS, no frameworks, no bloat.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔍</div>
+          <div class="card-title">RE Lab</div>
+          <div class="card-desc">Experimenting with Ghidra and ChipWhisperer for reverse engineering and side-channel analysis.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <p class="section-label reveal">contact</p>
+      <h2 class="section-title reveal">find me</h2>
+      <div class="contact-grid reveal">
+        <a href="https://github.com" class="contact-item">
+          <strong>GitHub</strong>
+          github.com/kakampo
+        </a>
+        <a href="mailto:you@email.com" class="contact-item">
+          <strong>Email</strong>
+          you@email.com
+        </a>
+        <a href="#" class="contact-item">
+          <strong>Discord</strong>
+          kakampo#0000
+        </a>
+        <a href="#" class="contact-item">
+          <strong>Location</strong>
+          Constantine, Algeria 🇩🇿
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <footer>
+      <span>© 2025 kakampo</span>
+      <span>built with HTML + GitHub Pages</span>
+    </footer>
+  </div>
+
+  <script>
+    // typing animation
+    const lines = [
+      'learning C/C++ and ARM64 assembly...',
+      'reverse engineering consoles...',
+      'one day: Switch 2 emulator.',
+    ];
+    let li = 0, ci = 0, deleting = false;
+    const el = document.getElementById('typed');
+
+    function type() {
+      const line = lines[li];
+      if (!deleting) {
+        el.textContent = line.slice(0, ++ci);
+        if (ci === line.length) { deleting = true; setTimeout(type, 1800); return; }
+      } else {
+        el.textContent = line.slice(0, --ci);
+        if (ci === 0) { deleting = false; li = (li + 1) % lines.length; }
+      }
+      setTimeout(type, deleting ? 40 : 65);
+    }
+    setTimeout(type, 1400);
+
+    // scroll reveal
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
+
+</body>
+</html>
